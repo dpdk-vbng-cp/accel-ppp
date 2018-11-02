@@ -284,7 +284,7 @@ static void* ap_redis_thread(void* arg)
 			/* log error event, loop and continue waiting */
 			log_error("ap_redis: epoll_ctl failed: %d (%s)\n", errno, strerror(errno));
 			continue;
-		} 
+		}
 
 		for (unsigned int i = 0; i < 32; i++) {
 			if (epev[i].data.fd == ap_redis->evfd) {
@@ -405,7 +405,7 @@ static void ap_redis_enqueue(struct ap_session *ses, const int event)
 
 	/* redis background thread not running? => return */
 	if (!(ap_redis->flags & REDIS_FLAG_BG_THREAD_IS_RUNNING)) {
-		return;		
+		return;
 	}
 
 	switch (event) {
