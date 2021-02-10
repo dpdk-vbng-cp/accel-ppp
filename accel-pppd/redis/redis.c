@@ -24,6 +24,10 @@
 #include "spinlock.h"
 #include "mempool.h"
 
+#ifdef RADIUS
+#include "radius.h"
+#endif
+
 #include "utils.h"
 #include "memdebug.h"
 #include "ipdb.h"
@@ -34,6 +38,12 @@ extern char** environ;
 #define DEFAULT_REDIS_HOST    "localhost"
 #define DEFAULT_REDIS_PORT     6379
 #define DEFAULT_REDIS_PUBCHAN "accel-ppp"
+
+#ifdef RADIUS
+static int conf_attr_down = 11; //Filter-Id
+static int conf_attr_up = 11; //Filter-Id
+static int conf_vendor = 0;
+#endif
 
 enum ap_redis_events_t {
 	REDIS_EV_SES_STARTING         = 0x00000001,
@@ -87,6 +97,7 @@ struct ap_redis_msg_t {
 	int pppoe_sessionid;
 	char* ctrl_ifname;
 	char* nas_identifier;
+	char* qos_val;
 };
 
 struct ap_redis_t {
@@ -224,6 +235,10 @@ static void ap_redis_dequeue(struct ap_redis_t* ap_redis, redisContext* ctx)
 		if (msg->nas_identifier)
 			json_object_object_add(jobj, "nas_identifier", json_object_new_string(msg->nas_identifier));
 
+		/* qos_val */
+		if (msg->qos_val)
+			json_object_object_add(jobj, "qos_val", json_object_new_string(msg->qos_val));
+
 
 		// TODO: send msg to redis instance
 		redisReply* reply;
@@ -255,6 +270,8 @@ static void ap_redis_dequeue(struct ap_redis_t* ap_redis, redisContext* ctx)
 			free(msg->ctrl_ifname);
 		if (msg->nas_identifier)
 			free(msg->nas_identifier);
+		if (msg->qos_val)
+			free(msg->qos_val);
 
 		mempool_free(msg);
 	}
@@ -442,6 +459,27 @@ static int ap_redis_open(struct ap_redis_t *ap_redis)
 	return 0;
 }
 
+/* This function parses the QoS value from radius Access-Accept messages. At
+ * the moment we parse the attribute Filter-Id similar as in
+ * shaper.c:check_radius_attrs. A value of the format
+ * <SERVICE_TYPE>/<DL_RATE_KBITS>/<UL_RATE_KBITS> is expected. */
+static const char* parse_qos_val(struct rad_packet_t *pack)
+{
+	struct rad_attr_t *attr;
+
+	list_for_each_entry(attr, &pack->attrs, entry) {
+		if (attr->vendor && attr->vendor->id != conf_vendor)
+			continue;
+		if (!attr->vendor && conf_vendor)
+			continue;
+		if (attr->attr->id != conf_attr_down && attr->attr->id != conf_attr_up)
+			continue;
+
+        return attr->val.string;
+	}
+
+    return NULL;
+}
 
 static void ap_redis_enqueue(struct ap_session *ses, const int event)
 {
@@ -513,6 +551,8 @@ static void ap_redis_enqueue(struct ap_session *ses, const int event)
 		msg->pppoe_sessionid = ses->conn_pppoe_sid;
 	if (ses->ctrl->ifname)
 		msg->ctrl_ifname = _strdup(ses->ctrl->ifname);
+	if (ses->qos_val)
+		msg->qos_val = _strdup(ses->qos_val);
 
 	msg->ip_addr = _strdup(tmp_addr);
 	msg->nas_identifier = _strdup(ap_redis->nas_id);
@@ -599,9 +639,12 @@ static void ev_ses_pre_finished(struct ap_session *ses)
 	ap_redis_enqueue(ses, REDIS_EV_SES_PRE_FINISHED);
 }
 
-static void ev_radius_access_accept(struct ap_session *ses)
+static void ev_radius_access_accept(struct ev_radius_t *ev)
 {
-	ap_redis_enqueue(ses, REDIS_EV_RADIUS_ACCESS_ACCEPT);
+	/* Parse QoS attribute and store value in the ap_session struct to make it
+	 * available across different events. */
+	ev->ses->qos_val = strdup(parse_qos_val(ev->reply));
+	ap_redis_enqueue(ev->ses, REDIS_EV_RADIUS_ACCESS_ACCEPT);
 }
 
 static void ev_radius_coa(struct ap_session *ses)
