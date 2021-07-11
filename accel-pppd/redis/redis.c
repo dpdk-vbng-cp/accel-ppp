@@ -148,41 +148,123 @@ static void ap_redis_dequeue(struct ap_redis_t* ap_redis, redisContext* ctx)
 
 		/* event type */
 		switch (msg->event) {
-		case REDIS_EV_SES_STARTING:             jstring = json_object_new_string("session-starting");       break;
-		case REDIS_EV_SES_STARTED:              jstring = json_object_new_string("session-started");        break;
-		case REDIS_EV_SES_FINISHING:		jstring = json_object_new_string("session-finishing");      break;
-		case REDIS_EV_SES_FINISHED:             jstring = json_object_new_string("session-finished");       break;
-		case REDIS_EV_SES_AUTHORIZED:		jstring = json_object_new_string("session-authorized");     break;
-		case REDIS_EV_CTRL_STARTING:		jstring = json_object_new_string("control-starting");       break;
-		case REDIS_EV_CTRL_STARTED:             jstring = json_object_new_string("control-started");        break;
-		case REDIS_EV_CTRL_FINISHED:		jstring = json_object_new_string("control-finished");       break;
-		case REDIS_EV_SES_PRE_UP:               jstring = json_object_new_string("session-pre-up");         break;
-		case REDIS_EV_SES_ACCT_START:           jstring = json_object_new_string("session-acct-start");     break;
-		case REDIS_EV_CONFIG_RELOAD:            jstring = json_object_new_string("config-reload");          break;
-		case REDIS_EV_SES_AUTH_FAILED:          jstring = json_object_new_string("session-auth-failed");    break;
-		case REDIS_EV_SES_PRE_FINISHED:         jstring = json_object_new_string("session-pre-finished");   break;
-		case REDIS_EV_IP_CHANGED:               jstring = json_object_new_string("ip-changed");             break;
-		case REDIS_EV_SHAPER:                   jstring = json_object_new_string("shaper");                 break;
-		case REDIS_EV_MPPE_KEYS:                jstring = json_object_new_string("mppe-keys");              break;
-		case REDIS_EV_DNS:                      jstring = json_object_new_string("dns");                    break;
-		case REDIS_EV_WINS:                     jstring = json_object_new_string("wins");                   break;
-		case REDIS_EV_FORCE_INTERIM_UPDATE:     jstring = json_object_new_string("force-interim-update");   break;
-		case REDIS_EV_RADIUS_ACCESS_ACCEPT:     jstring = json_object_new_string("radius-access-accept");   break;
-		case REDIS_EV_RADIUS_COA:               jstring = json_object_new_string("coa");                    break;
-		default:                                jstring = json_object_new_string("unknown");                break;
+			case REDIS_EV_SES_STARTING:
+				jstring = json_object_new_string("session-starting");
+				break;
+
+			case REDIS_EV_SES_STARTED:
+				jstring = json_object_new_string("session-started");
+				break;
+
+			case REDIS_EV_SES_FINISHING:
+				jstring = json_object_new_string("session-finishing");
+				break;
+
+			case REDIS_EV_SES_FINISHED:
+				jstring = json_object_new_string("session-finished");
+				break;
+
+			case REDIS_EV_SES_AUTHORIZED:
+				jstring = json_object_new_string("session-authorized");
+				break;
+
+			case REDIS_EV_CTRL_STARTING:
+				jstring = json_object_new_string("control-starting");
+				break;
+
+			case REDIS_EV_CTRL_STARTED:
+				jstring = json_object_new_string("control-started");
+				break;
+
+			case REDIS_EV_CTRL_FINISHED:
+				jstring = json_object_new_string("control-finished");
+				break;
+
+			case REDIS_EV_SES_PRE_UP:
+				jstring = json_object_new_string("session-pre-up");
+				break;
+
+			case REDIS_EV_SES_ACCT_START:
+				jstring = json_object_new_string("session-acct-start");
+				break;
+
+			case REDIS_EV_CONFIG_RELOAD:
+				jstring = json_object_new_string("config-reload");
+				break;
+
+			case REDIS_EV_SES_AUTH_FAILED:
+				jstring = json_object_new_string("session-auth-failed");
+				break;
+
+			case REDIS_EV_SES_PRE_FINISHED:
+				jstring = json_object_new_string("session-pre-finished");
+				break;
+
+			case REDIS_EV_IP_CHANGED:
+				jstring = json_object_new_string("ip-changed");
+				break;
+
+			case REDIS_EV_SHAPER:
+				jstring = json_object_new_string("shaper");
+				break;
+
+			case REDIS_EV_MPPE_KEYS:
+				jstring = json_object_new_string("mppe-keys");
+				break;
+
+			case REDIS_EV_DNS:
+				jstring = json_object_new_string("dns");
+				break;
+
+			case REDIS_EV_WINS:
+				jstring = json_object_new_string("wins");
+				break;
+
+			case REDIS_EV_FORCE_INTERIM_UPDATE:
+				jstring = json_object_new_string("force-interim-update");
+				break;
+
+			case REDIS_EV_RADIUS_ACCESS_ACCEPT:
+				jstring = json_object_new_string("radius-access-accept");
+				break;
+
+			case REDIS_EV_RADIUS_COA:
+				jstring = json_object_new_string("coa");
+				break;
+
+			default:
+				jstring = json_object_new_string("unknown");
+				break;
 		}
 		json_object_object_add(jobj, "event", jstring);
 
 		/* session ctrl type */
 		switch (msg->ses_ctrl_type) {
-		case REDIS_SES_CTRL_TYPE_PPTP:    jstring = json_object_new_string("pptp");    break;
-		case REDIS_SES_CTRL_TYPE_L2TP:    jstring = json_object_new_string("l2tp");    break;
-		case REDIS_SES_CTRL_TYPE_PPPOE:   jstring = json_object_new_string("pppoe");   break;
-		case REDIS_SES_CTRL_TYPE_IPOE:    jstring = json_object_new_string("ipoe");    break;
-		case REDIS_SES_CTRL_TYPE_OPENVPN: jstring = json_object_new_string("openvpn"); break;
-		case REDIS_SES_CTRL_TYPE_SSTP:    jstring = json_object_new_string("sstp");    break;
-		default: {};
+			case REDIS_SES_CTRL_TYPE_PPTP:
+				jstring = json_object_new_string("pptp");
+				break;
+
+			case REDIS_SES_CTRL_TYPE_L2TP:
+				jstring = json_object_new_string("l2tp");
+				break;
+
+			case REDIS_SES_CTRL_TYPE_PPPOE:
+				jstring = json_object_new_string("pppoe");
+				break;
+
+			case REDIS_SES_CTRL_TYPE_IPOE:
+				jstring = json_object_new_string("ipoe");
+				break;
+
+			case REDIS_SES_CTRL_TYPE_OPENVPN:
+				jstring = json_object_new_string("openvpn");
+				break;
+
+			case REDIS_SES_CTRL_TYPE_SSTP:
+				jstring = json_object_new_string("sstp");
+				break;
 		}
+
 		json_object_object_add(jobj, "ctrl_type", jstring);
 
 		/* session channel name */
@@ -481,12 +563,10 @@ static void ap_redis_enqueue(struct ap_session *ses, const int event)
 		case REDIS_EV_WINS:
 		case REDIS_EV_FORCE_INTERIM_UPDATE:
 		case REDIS_EV_RADIUS_ACCESS_ACCEPT:
-		case REDIS_EV_RADIUS_COA: {
-			/* do nothing */
-		} break;
-		default: {
+		case REDIS_EV_RADIUS_COA:
+			break; /* do nothing */
+		default:
 			return;
-		};
 	}
 
 	struct ap_redis_msg_t* msg = mempool_alloc(ap_redis->msg_pool);
@@ -526,14 +606,29 @@ static void ap_redis_enqueue(struct ap_session *ses, const int event)
 	msg->nas_identifier = _strdup(ap_redis->nas_id);
 
 	switch(ses->ctrl->type) {
-	case CTRL_TYPE_PPTP:    msg->ses_ctrl_type = REDIS_SES_CTRL_TYPE_PPTP;    break;
-	case CTRL_TYPE_L2TP:    msg->ses_ctrl_type = REDIS_SES_CTRL_TYPE_L2TP;    break;
-	case CTRL_TYPE_PPPOE:   msg->ses_ctrl_type = REDIS_SES_CTRL_TYPE_PPPOE;   break;
-	case CTRL_TYPE_IPOE:    msg->ses_ctrl_type = REDIS_SES_CTRL_TYPE_IPOE;    break;
-	case CTRL_TYPE_OPENVPN: msg->ses_ctrl_type = REDIS_SES_CTRL_TYPE_OPENVPN; break;
-	case CTRL_TYPE_SSTP:    msg->ses_ctrl_type = REDIS_SES_CTRL_TYPE_SSTP;    break;
-	default:{
-	}
+		case CTRL_TYPE_PPTP:
+			msg->ses_ctrl_type = REDIS_SES_CTRL_TYPE_PPTP;
+			break;
+
+		case CTRL_TYPE_L2TP:
+			msg->ses_ctrl_type = REDIS_SES_CTRL_TYPE_L2TP;
+			break;
+
+		case CTRL_TYPE_PPPOE:
+			msg->ses_ctrl_type = REDIS_SES_CTRL_TYPE_PPPOE;
+			break;
+
+		case CTRL_TYPE_IPOE:
+			msg->ses_ctrl_type = REDIS_SES_CTRL_TYPE_IPOE;
+			break;
+
+		case CTRL_TYPE_OPENVPN:
+			msg->ses_ctrl_type = REDIS_SES_CTRL_TYPE_OPENVPN;
+			break;
+
+		case CTRL_TYPE_SSTP:
+			msg->ses_ctrl_type = REDIS_SES_CTRL_TYPE_SSTP;
+			break;
 	}
 
 	spin_lock(&ap_redis->msg_queue_lock);
